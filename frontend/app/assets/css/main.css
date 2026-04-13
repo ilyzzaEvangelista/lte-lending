@@ -1,0 +1,2 @@
+/* Entry stylesheet — keep path stable for Nuxt / cached builds */
+@import './vuetify-overrides.css';

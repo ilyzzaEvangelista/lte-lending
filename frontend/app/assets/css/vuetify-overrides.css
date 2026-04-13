@@ -1,0 +1,16 @@
+/* Thin global tweaks on top of Vuetify */
+a {
+  text-decoration: none;
+  color: rgb(var(--v-theme-primary));
+}
+
+a:hover {
+  opacity: 0.9;
+}
+
+/* Keyboard focus — clearer than default for links and controls */
+a:focus-visible,
+.v-btn:focus-visible {
+  outline: 2px solid rgb(var(--v-theme-primary));
+  outline-offset: 2px;
+}
