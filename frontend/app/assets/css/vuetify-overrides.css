@@ -14,3 +14,69 @@ a:focus-visible,
   outline: 2px solid rgb(var(--v-theme-primary));
   outline-offset: 2px;
 }
+
+/* —— Portal shells (admin / client): light dashboard like clinic-style UI —— */
+.portal-shell {
+  --portal-border: #e5e7eb;
+  --portal-main-bg: #f5f6f8;
+  --portal-nav-active: #e8eaf6;
+  --portal-nav-hover: #f3f4f6;
+}
+
+.portal-drawer .v-navigation-drawer__content {
+  background: #ffffff;
+  border-inline-end: 1px solid var(--portal-border);
+}
+
+.portal-main {
+  background-color: var(--portal-main-bg) !important;
+}
+
+.portal-app-bar {
+  background: #ffffff !important;
+  border-bottom: 1px solid var(--portal-border) !important;
+  box-shadow: none !important;
+}
+
+.portal-drawer-footer {
+  border-top: 1px solid var(--portal-border);
+  background: #fafbfc;
+}
+
+.portal-brand {
+  border-bottom: 1px solid var(--portal-border);
+}
+
+.portal-nav-list .v-list-item {
+  border-radius: 10px;
+  margin-bottom: 6px;
+  letter-spacing: 0.01em;
+}
+
+.portal-nav-list .v-list-item:hover:not(.v-list-item--active) {
+  background-color: var(--portal-nav-hover) !important;
+}
+
+.portal-nav-list .v-list-item--active,
+.portal-nav-list .v-list-item--active.v-list-item--link,
+.portal-nav-list .portal-nav-item-active {
+  background-color: var(--portal-nav-active) !important;
+  color: rgb(var(--v-theme-primary)) !important;
+}
+
+.portal-nav-list .v-list-item--active .v-icon,
+.portal-nav-list .v-list-item--active .v-list-item__prepend .v-icon,
+.portal-nav-list .portal-nav-item-active .v-icon {
+  color: rgb(var(--v-theme-primary)) !important;
+  opacity: 1;
+}
+
+.portal-nav-list .v-list-item--active .v-list-item__overlay {
+  opacity: 0 !important;
+}
+
+.portal-footer-btn {
+  border-radius: 10px !important;
+  border-color: var(--portal-border) !important;
+  text-transform: none;
+}

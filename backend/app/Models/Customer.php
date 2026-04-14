@@ -15,6 +15,8 @@ class Customer extends Authenticatable
     protected $fillable = [
         'last_name',
         'first_name',
+        'age',
+        'gender',
         'profile_image',
         'address',
         'email',
@@ -34,6 +36,7 @@ class Customer extends Authenticatable
         return [
             'password' => 'hashed',
             'status' => 'integer',
+            'age' => 'integer',
         ];
     }
 

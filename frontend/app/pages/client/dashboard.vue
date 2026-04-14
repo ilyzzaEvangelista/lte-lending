@@ -21,7 +21,7 @@
 import { useAuthStore } from '~~/stores/auth'
 
 definePageMeta({
-  layout: 'default',
+  layout: 'client',
   middleware: 'auth',
 })
 

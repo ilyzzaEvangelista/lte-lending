@@ -20,14 +20,17 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/client/loans', [ClientLoanController::class, 'index']);
         Route::post('/client/loans', [ClientLoanController::class, 'store']);
         Route::get('/client/loans/{loanDetail}', [ClientLoanController::class, 'show']);
+        Route::get('/client/loans/{loanDetail}/payslip', [ClientLoanController::class, 'payslip']);
         Route::get('/client/loans/{loanDetail}/records', [ClientLoanController::class, 'records']);
         Route::post('/client/loans/{loanDetail}/payments', [ClientPaymentController::class, 'store']);
     });
 
     Route::middleware('admin')->group(function () {
         Route::get('/admin/loans', [AdminLoanController::class, 'index']);
+        Route::get('/admin/loans/{loanDetail}/payslip', [AdminLoanController::class, 'payslip']);
         Route::patch('/admin/loans/{loanDetail}', [AdminLoanController::class, 'update']);
         Route::get('/admin/payments', [AdminPaymentController::class, 'index']);
+        Route::get('/admin/payments/{loanPayment}/receipt', [AdminPaymentController::class, 'receipt']);
         Route::patch('/admin/payments/{loanPayment}', [AdminPaymentController::class, 'update']);
         Route::get('/admin/logs', [AdminActivityLogController::class, 'index']);
     });

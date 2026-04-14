@@ -23,6 +23,8 @@ class DatabaseSeeder extends Seeder
             [
                 'first_name' => 'Demo',
                 'last_name' => 'Client',
+                'age' => 35,
+                'gender' => 'other',
                 'username' => 'democlient',
                 'password' => 'password',
                 'address' => '123 Main St',

@@ -5,9 +5,12 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class LoanDetail extends Model
 {
+    use SoftDeletes;
+
     public const STATUS_PENDING = 'pending';
 
     public const STATUS_APPROVED = 'approved';
@@ -23,8 +26,20 @@ class LoanDetail extends Model
         'customer_id',
         'first_name',
         'last_name',
+        'date_of_birth',
+        'age',
+        'gender',
         'email',
         'address',
+        'city',
+        'country',
+        'nearest_branch',
+        'phone',
+        'profession',
+        'loan_type',
+        'monthly_income_other',
+        'has_existing_loan',
+        'terms_accepted_at',
         'amount',
         'interest',
         'monthly',
@@ -46,6 +61,10 @@ class LoanDetail extends Model
             'amount' => 'decimal:2',
             'interest' => 'decimal:4',
             'monthly' => 'decimal:2',
+            'date_of_birth' => 'date',
+            'age' => 'integer',
+            'has_existing_loan' => 'boolean',
+            'terms_accepted_at' => 'datetime',
         ];
     }
 

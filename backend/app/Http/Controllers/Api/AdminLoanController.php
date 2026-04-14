@@ -11,9 +11,23 @@ use App\Support\LoanMath;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Symfony\Component\HttpFoundation\Response;
 
 class AdminLoanController extends Controller
 {
+    public function payslip(LoanDetail $loanDetail): Response
+    {
+        $binary = $loanDetail->getRawOriginal('payslip_image');
+        if ($binary === null || $binary === '') {
+            abort(404);
+        }
+
+        return response($binary, 200, [
+            'Content-Type' => $this->guessImageMimeType($binary),
+            'Cache-Control' => 'private, max-age=3600',
+        ]);
+    }
+
     public function index(): JsonResponse
     {
         $rows = LoanDetail::query()
@@ -90,5 +104,16 @@ class AdminLoanController extends Controller
         $base['has_payslip'] = ! empty($d->getRawOriginal('payslip_image'));
 
         return $base;
+    }
+
+    private function guessImageMimeType(string $binary): string
+    {
+        return match (true) {
+            str_starts_with($binary, "\xFF\xD8\xFF") => 'image/jpeg',
+            str_starts_with($binary, "\x89PNG\r\n\x1A\n") => 'image/png',
+            str_starts_with($binary, 'GIF87a') || str_starts_with($binary, 'GIF89a') => 'image/gif',
+            str_starts_with($binary, 'RIFF') && strlen($binary) >= 12 && substr($binary, 8, 4) === 'WEBP' => 'image/webp',
+            default => 'application/octet-stream',
+        };
     }
 }

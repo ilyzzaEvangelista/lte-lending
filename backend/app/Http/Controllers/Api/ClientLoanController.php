@@ -3,12 +3,15 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\StoreLoanApplicationRequest;
 use App\Models\Customer;
 use App\Models\LoanDetail;
 use App\Support\ActivityLogger;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
+use Symfony\Component\HttpFoundation\Response;
 
 class ClientLoanController extends Controller
 {
@@ -25,41 +28,34 @@ class ClientLoanController extends Controller
         return response()->json(['data' => $rows]);
     }
 
-    public function store(Request $request): JsonResponse
+    public function store(StoreLoanApplicationRequest $request): JsonResponse
     {
         /** @var Customer $customer */
         $customer = $request->user();
 
-        $data = $request->validate([
-            'amount' => ['required', 'numeric', 'min:100', 'max:99999999.99'],
-            'tenure' => ['required', 'integer', 'min:1', 'max:360'],
-            'purpose' => ['nullable', 'string', 'max:255'],
-            'payslip_base64' => ['nullable', 'string'],
-        ]);
+        $validated = $request->validated();
 
         $transactionNo = 'TRN-'.strtoupper(Str::random(12));
 
-        $payslip = null;
-        if (! empty($data['payslip_base64'])) {
-            $raw = preg_replace('#^data:image/[\w+]+;base64,#i', '', $data['payslip_base64']);
-            $payslip = base64_decode($raw, true) ?: null;
+        $raw = preg_replace('#^data:image/[\w+]+;base64,#i', '', $validated['payslip_base64']);
+        $payslip = base64_decode($raw, true);
+        if ($payslip === false || $payslip === '') {
+            throw ValidationException::withMessages([
+                'payslip_base64' => ['Please upload a valid payslip image.'],
+            ]);
         }
 
-        $detail = LoanDetail::create([
+        $payload = collect($validated)->except(['payslip_base64', 'accept_terms'])->merge([
             'transaction_no' => $transactionNo,
             'customer_id' => $customer->id,
-            'first_name' => $customer->first_name,
-            'last_name' => $customer->last_name,
-            'email' => $customer->email,
-            'address' => $customer->address,
-            'amount' => $data['amount'],
             'interest' => 0,
             'monthly' => null,
-            'tenure' => $data['tenure'],
-            'purpose' => $data['purpose'] ?? null,
+            'terms_accepted_at' => now(),
             'payslip_image' => $payslip,
             'status' => LoanDetail::STATUS_PENDING,
-        ]);
+        ])->all();
+
+        $detail = LoanDetail::create($payload);
 
         ActivityLogger::record($customer, 'Loan application submitted', $customer->username);
 
@@ -90,6 +86,25 @@ class ClientLoanController extends Controller
         return response()->json(['data' => $records]);
     }
 
+    public function payslip(Request $request, LoanDetail $loanDetail): Response
+    {
+        /** @var Customer $customer */
+        $customer = $request->user();
+        if ($loanDetail->customer_id !== $customer->id) {
+            abort(404);
+        }
+
+        $binary = $loanDetail->getRawOriginal('payslip_image');
+        if ($binary === null || $binary === '') {
+            abort(404);
+        }
+
+        return response($binary, 200, [
+            'Content-Type' => $this->guessImageMimeType($binary),
+            'Cache-Control' => 'private, max-age=3600',
+        ]);
+    }
+
     private function serializeDetail(LoanDetail $d, bool $includeMeta = false): array
     {
         $base = $d->toArray();
@@ -107,5 +122,16 @@ class ClientLoanController extends Controller
         }
 
         return $base;
+    }
+
+    private function guessImageMimeType(string $binary): string
+    {
+        return match (true) {
+            str_starts_with($binary, "\xFF\xD8\xFF") => 'image/jpeg',
+            str_starts_with($binary, "\x89PNG\r\n\x1A\n") => 'image/png',
+            str_starts_with($binary, 'GIF87a') || str_starts_with($binary, 'GIF89a') => 'image/gif',
+            str_starts_with($binary, 'RIFF') && strlen($binary) >= 12 && substr($binary, 8, 4) === 'WEBP' => 'image/webp',
+            default => 'application/octet-stream',
+        };
     }
 }
