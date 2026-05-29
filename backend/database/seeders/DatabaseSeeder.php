@@ -3,7 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Admin;
-use App\Models\Customer;
+use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
@@ -18,9 +18,10 @@ class DatabaseSeeder extends Seeder
             ['password' => 'password'],
         );
 
-        Customer::query()->firstOrCreate(
+        User::query()->firstOrCreate(
             ['email' => 'client@example.com'],
             [
+                'name' => 'Demo Client',
                 'first_name' => 'Demo',
                 'last_name' => 'Client',
                 'age' => 35,
@@ -30,6 +31,7 @@ class DatabaseSeeder extends Seeder
                 'address' => '123 Main St',
                 'contact' => '5550100',
                 'status' => 1,
+                'role' => User::ROLE_CLIENT,
             ],
         );
     }

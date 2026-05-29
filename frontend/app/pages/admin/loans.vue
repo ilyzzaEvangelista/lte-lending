@@ -5,7 +5,7 @@
           <v-text-field
               v-model="search"
               class="loans-search"
-              density="comfortable"
+              "
               variant="outlined"
               label="Search"
               placeholder="Reference, client, email, status…"

@@ -18,7 +18,7 @@ class LoanPayment extends Model
 
     protected $fillable = [
         'transaction_no',
-        'customer_id',
+        'user_id',
         'full_name',
         'amount',
         'balance',
@@ -46,7 +46,12 @@ class LoanPayment extends Model
 
     public function customer(): BelongsTo
     {
-        return $this->belongsTo(Customer::class);
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'user_id');
     }
 
     public function confirmedByAdmin(): BelongsTo

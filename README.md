@@ -21,8 +21,8 @@ lending-project/
 ## Features (high level)
 
 - **Public:** registration and login for customers; admin login.
-- **Client portal:** dashboard, loan applications list (search + pagination), new application form, loan detail (summary, payslip preview, payment schedule hints, loan records, submit payment with optional receipt).
-- **Admin portal:** loan applications (search, pagination, status/interest/notes, payslip preview), payments table (search, pagination, receipt preview, confirm/reject), activity logs.
+- **Client portal:** dashboard (counts + **next payment due** for approved/active loans), loan applications list (search + pagination), new application form, loan detail (summary, payslip preview, payment schedule hints, loan records, submit payment with optional receipt).
+- **Admin portal:** overview dashboard (KPIs, loans-by-status, payment pipeline, activity snapshot), loan applications (search, pagination, status/interest/notes, payslip preview), payments table (search, pagination, receipt preview, confirm/reject), activity logs.
 
 ## Requirements
 
@@ -97,8 +97,31 @@ Public:
 Authenticated (`Authorization: Bearer`):
 
 - `POST /api/logout`, `GET /api/me`
-- **Customer:** `GET/POST /api/client/loans`, `GET /api/client/loans/{id}`, payslip/records/payments endpoints
-- **Admin:** `GET/PATCH /api/admin/loans`, payslip image, `GET/PATCH /api/admin/payments`, receipt image, `GET /api/admin/logs`
+
+**Customer** (`customer` middleware):
+
+| Method | Path | Description |
+| ------ | ---- | ------------- |
+| `GET` | `/api/client/dashboard` | Summary counts and upcoming **next payment due** per approved/active loan (see `ClientDashboardController`) |
+| `GET` | `/api/client/loans` | List the signed-in customer’s applications |
+| `POST` | `/api/client/loans` | Submit a new application (incl. payslip payload) |
+| `GET` | `/api/client/loans/{loanDetail}` | Loan detail (+ records & payments when serialized) |
+| `GET` | `/api/client/loans/{loanDetail}/payslip` | Binary payslip image |
+| `GET` | `/api/client/loans/{loanDetail}/records` | Amortization-style ledger rows |
+| `POST` | `/api/client/loans/{loanDetail}/payments` | Submit a payment (optional receipt image) |
+
+**Admin** (`admin` middleware):
+
+| Method | Path | Description |
+| ------ | ---- | ------------- |
+| `GET` | `/api/admin/dashboard` | Aggregated stats (applications by status, portfolio exposure, payment counts, activity, customers) |
+| `GET` | `/api/admin/loans` | List all loan applications |
+| `GET` | `/api/admin/loans/{loanDetail}/payslip` | Binary payslip image |
+| `PATCH` | `/api/admin/loans/{loanDetail}` | Update status, interest, admin note |
+| `GET` | `/api/admin/payments` | List customer-submitted payments |
+| `GET` | `/api/admin/payments/{loanPayment}/receipt` | Binary receipt image |
+| `PATCH` | `/api/admin/payments/{loanPayment}` | Confirm or reject a payment |
+| `GET` | `/api/admin/logs` | Activity log entries |
 
 See `backend/routes/api.php` for the canonical list.
 

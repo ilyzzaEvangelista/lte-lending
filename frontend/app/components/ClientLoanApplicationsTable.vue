@@ -5,7 +5,6 @@
         <div class="d-flex align-center justify-end mb-4">
             <v-text-field
                 v-model="search"
-                density="comfortable"
                 variant="outlined"
                 label="Search"
                 placeholder="Reference, status, amount…"

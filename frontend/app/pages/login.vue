@@ -14,7 +14,7 @@
               v-model="mode"
               mandatory
               divided
-              density="comfortable"
+              "
               class="mb-2 w-100"
               color="primary"
               aria-label="Account type"
@@ -34,7 +34,7 @@
                 label="Username"
                 prepend-inner-icon="mdi-account-outline"
                 variant="outlined"
-                density="comfortable"
+                "
                 class="mb-3"
                 autocomplete="username"
                 hide-details="auto"
@@ -46,7 +46,7 @@
                 type="email"
                 prepend-inner-icon="mdi-email-outline"
                 variant="outlined"
-                density="comfortable"
+                "
                 class="mb-3"
                 autocomplete="email"
                 hide-details="auto"
@@ -57,12 +57,12 @@
                 type="password"
                 prepend-inner-icon="mdi-lock-outline"
                 variant="outlined"
-                density="comfortable"
+                "
                 class="mb-4"
                 autocomplete="current-password"
                 hide-details="auto"
               />
-              <v-alert v-if="error" type="error" variant="tonal" density="comfortable" class="mb-4 text-body-2" rounded="lg">
+              <v-alert v-if="error" type="error" variant="tonal" " class="mb-4 text-body-2" rounded="lg">
                 {{ error }}
               </v-alert>
               <v-btn type="submit" color="primary" block size="large" min-height="48" rounded="lg" :loading="loading">

@@ -86,8 +86,28 @@
           follow their loan journey online; your team handles reviews and updates from a dedicated admin workspace.
         </p>
         <div class="d-flex flex-wrap ga-3 justify-center mt-8">
-          <v-btn to="/register" color="primary" size="large" rounded="lg" prepend-icon="mdi-account-plus"> Create account </v-btn>
-          <v-btn to="/login" variant="outlined" size="large" rounded="lg" prepend-icon="mdi-login"> Sign in </v-btn>
+          <v-btn
+            to="/register"
+            variant="flat"
+            color="primary"
+            size="large"
+            rounded="lg"
+            class="hero-cta text-none"
+            prepend-icon="mdi-account-plus"
+          >
+            Create account
+          </v-btn>
+          <v-btn
+            to="/login"
+            variant="outlined"
+            color="primary"
+            class="text-none"
+            size="large"
+            rounded="lg"
+            prepend-icon="mdi-login"
+          >
+            Sign in
+          </v-btn>
         </div>
       </v-container>
     </section>
@@ -194,7 +214,6 @@ const services = [
 .hero-cta {
   background: rgb(var(--v-theme-primary)) !important;
   color: rgb(var(--v-theme-on-primary)) !important;
-  font-weight: 600;
   letter-spacing: 0.03em;
   box-shadow: 0 6px 20px rgba(var(--v-theme-primary), 0.35);
 }

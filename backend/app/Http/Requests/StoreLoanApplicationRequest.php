@@ -2,14 +2,16 @@
 
 namespace App\Http\Requests;
 
-use App\Models\Customer;
+use App\Models\User;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreLoanApplicationRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user() instanceof Customer;
+        $u = $this->user();
+
+        return $u instanceof User && $u->isClient();
     }
 
     protected function prepareForValidation(): void
@@ -28,18 +30,6 @@ class StoreLoanApplicationRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'first_name' => ['required', 'string', 'max:60'],
-            'last_name' => ['required', 'string', 'max:60'],
-            'date_of_birth' => ['required', 'date', 'before:today'],
-            'age' => ['required', 'integer', 'min:13', 'max:120'],
-            'gender' => ['required', 'string', 'in:male,female,other,prefer_not_to_say'],
-            'email' => ['required', 'string', 'email', 'max:60'],
-            'address' => ['required', 'string', 'max:255'],
-            'city' => ['required', 'string', 'max:100'],
-            'country' => ['required', 'string', 'max:100'],
-            'nearest_branch' => ['required', 'string', 'max:120'],
-            'phone' => ['required', 'string', 'max:30'],
-            'profession' => ['required', 'string', 'max:120'],
             'loan_type' => ['required', 'string', 'max:120'],
             'monthly_income_other' => ['required', 'string', 'max:120'],
             'has_existing_loan' => ['required', 'boolean'],
@@ -57,10 +47,6 @@ class StoreLoanApplicationRequest extends FormRequest
     public function attributes(): array
     {
         return [
-            'first_name' => 'first name',
-            'last_name' => 'last name',
-            'date_of_birth' => 'date of birth',
-            'nearest_branch' => 'nearest branch',
             'monthly_income_other' => 'monthly income from other sources',
             'loan_type' => 'loan type',
             'has_existing_loan' => 'existing loan',

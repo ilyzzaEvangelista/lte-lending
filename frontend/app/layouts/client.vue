@@ -34,7 +34,7 @@
                       </div>
                   </div>
 
-                  <v-list class="flex-grow-1 px-3 pt-2 portal-nav-list" nav density="comfortable">
+                  <v-list class="flex-grow-1 px-3 pt-2 portal-nav-list" nav ">
                       <v-list-item
                           to="/client/dashboard"
                           title="Dashboard"
@@ -51,7 +51,20 @@
                           active-class="portal-nav-item-active"
                           @click="closeMobileDrawer"
                       />
+                      <v-tooltip v-if="!canSubmitLoanApplication" location="end" text="You already have an active loan. Close it before starting a new application.">
+                          <template #activator="{ props: tipProps }">
+                              <span v-bind="tipProps" class="d-block">
+                                  <v-list-item
+                                      title="New application"
+                                      prepend-icon="mdi-plus-circle-outline"
+                                      rounded="lg"
+                                      disabled
+                                  />
+                              </span>
+                          </template>
+                      </v-tooltip>
                       <v-list-item
+                          v-else
                           to="/client/loans/apply"
                           title="New application"
                           prepend-icon="mdi-plus-circle-outline"
@@ -108,7 +121,7 @@
               <v-app-bar
                   v-if="!isMobile"
                   flat
-                  density="comfortable"
+                  "
                   elevation="0"
                   class="main-top-bar portal-app-bar flex-shrink-0"
               >
@@ -137,6 +150,8 @@
   const isMobile = computed(() => mdAndDown.value);
   const railCollapsed = ref(false);
   const mobileDrawer = ref(false);
+
+  const canSubmitLoanApplication = computed(() => auth.user?.can_submit_loan_application !== false);
 
   const clientPageTitle = computed(() => {
       const titles = {

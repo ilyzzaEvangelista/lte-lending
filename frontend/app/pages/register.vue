@@ -20,7 +20,7 @@
                     v-model="firstName"
                     label="First name"
                     variant="outlined"
-                    density="comfortable"
+                    "
                     hide-details="auto"
                     autocomplete="given-name"
                     :rules="[rules.required]"
@@ -31,7 +31,7 @@
                     v-model="lastName"
                     label="Last name"
                     variant="outlined"
-                    density="comfortable"
+                    "
                     hide-details="auto"
                     autocomplete="family-name"
                     :rules="[rules.required]"
@@ -45,7 +45,7 @@
                     min="13"
                     max="120"
                     variant="outlined"
-                    density="comfortable"
+                    "
                     hide-details="auto"
                     :rules="[rules.required, rules.age]"
                   />
@@ -58,7 +58,7 @@
                     item-title="title"
                     item-value="value"
                     variant="outlined"
-                    density="comfortable"
+                    "
                     hide-details="auto"
                     :rules="[rules.required]"
                   />
@@ -70,7 +70,7 @@
                 v-model="username"
                 label="Username"
                 variant="outlined"
-                density="comfortable"
+                "
                 class="mb-1"
                 hide-details="auto"
                 persistent-hint
@@ -82,7 +82,7 @@
                 label="Email address"
                 type="email"
                 variant="outlined"
-                density="comfortable"
+                "
                 class="mb-1 mt-5"
                 hide-details="auto"
                 autocomplete="email"
@@ -94,7 +94,7 @@
                 v-model="contact"
                 label="Phone or other contact"
                 variant="outlined"
-                density="comfortable"
+                "
                 hide-details="auto"
                 autocomplete="tel"
                 maxlength="20"
@@ -105,7 +105,7 @@
                 v-model="address"
                 label="Address"
                 variant="outlined"
-                density="comfortable"
+                "
                 class="mb-1"
                 hide-details="auto"
                 autocomplete="street-address"
@@ -118,7 +118,7 @@
                 label="Password"
                 type="password"
                 variant="outlined"
-                density="comfortable"
+                "
                 hide-details="auto"
                 persistent-hint
                 autocomplete="new-password"
@@ -129,20 +129,20 @@
                 label="Confirm password"
                 type="password"
                 variant="outlined"
-                density="comfortable"
+                "
                 class="mb-2 mt-5"
                 hide-details="auto"
                 autocomplete="new-password"
                 :rules="[rules.required, rules.passwordMatch]"
               />
 
-              <v-alert v-if="fieldErrors" type="error" variant="tonal" density="comfortable" class="mt-4 rounded-lg">
+              <v-alert v-if="fieldErrors" type="error" variant="tonal" " class="mt-4 rounded-lg">
                 <div class="text-body-2 font-weight-medium mb-2">Please fix the following:</div>
                 <ul class="pl-4 mb-0 text-body-2">
                   <li v-for="line in fieldErrorLines" :key="line">{{ line }}</li>
                 </ul>
               </v-alert>
-              <v-alert v-else-if="error" type="error" variant="tonal" density="comfortable" class="mt-4 text-body-2 rounded-lg">
+              <v-alert v-else-if="error" type="error" variant="tonal" " class="mt-4 text-body-2 rounded-lg">
                 {{ error }}
               </v-alert>
 

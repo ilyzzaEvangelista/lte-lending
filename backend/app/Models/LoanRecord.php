@@ -12,7 +12,7 @@ class LoanRecord extends Model
 
     protected $fillable = [
         'transaction_no',
-        'customer_id',
+        'user_id',
         'no_of_payments',
         'payment_date',
         'amount',
@@ -41,6 +41,11 @@ class LoanRecord extends Model
 
     public function customer(): BelongsTo
     {
-        return $this->belongsTo(Customer::class);
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'user_id');
     }
 }

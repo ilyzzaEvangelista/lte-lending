@@ -38,10 +38,10 @@
 
                     <v-divider class="mb-1" />
 
-                    <v-list class="flex-grow-1" nav density="comfortable">
+                    <v-list class="flex-grow-1" nav ">
                         <v-list-item
                             to="/admin"
-                            title="Overview"
+                            title="Dashboard"
                             prepend-icon="mdi-view-dashboard-outline"
                             rounded="lg"
                             @click="closeMobileDrawer"
@@ -117,7 +117,7 @@
                     v-if="!isMobile"
                     flat
                     color="surface"
-                    density="comfortable"
+                    "
                     class="main-top-bar flex-shrink-0"
                 >
                     <v-toolbar-title class="text-h6 font-weight-semibold">{{ adminPageTitle }}</v-toolbar-title>
@@ -146,7 +146,7 @@
 
     const adminPageTitle = computed(() => {
         const titles = {
-            "/admin": "Overview",
+            "/admin": "Dashboard",
             "/admin/loans": "Loan applications",
             "/admin/payments": "Payments",
             "/admin/logs": "Activity logs",

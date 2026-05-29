@@ -1,6 +1,6 @@
 <template>
   <div class="default-layout">
-    <v-app-bar flat density="comfortable" color="primary" class="default-app-bar" elevation="1">
+    <v-app-bar flat " color="primary" class="default-app-bar" elevation="1">
       <v-toolbar-title class="text-h6 font-weight-bold ps-2">
         <NuxtLink to="/" class="brand-link d-flex align-center ga-2" aria-label="LoanHub home">
           <v-icon icon="mdi-finance" color="on-primary" size="26" aria-hidden="true" />

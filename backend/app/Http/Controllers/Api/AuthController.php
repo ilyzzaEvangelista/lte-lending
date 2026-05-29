@@ -2,10 +2,11 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Models\Admin;
-use App\Models\Customer;
-use App\Support\ActivityLogger;
 use App\Http\Controllers\Controller;
+use App\Models\Admin;
+use App\Models\LoanDetail;
+use App\Models\User;
+use App\Support\ActivityLogger;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -21,13 +22,14 @@ class AuthController extends Controller
             'age' => ['required', 'integer', 'min:13', 'max:120'],
             'gender' => ['required', 'string', 'in:male,female,other,prefer_not_to_say'],
             'address' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:60', 'unique:customers,email'],
+            'email' => ['required', 'string', 'email', 'max:60', 'unique:users,email'],
             'contact' => ['required', 'string', 'max:20'],
-            'username' => ['required', 'string', 'max:60', 'unique:customers,username', 'regex:/^[a-zA-Z0-9._-]+$/'],
+            'username' => ['required', 'string', 'max:60', 'unique:users,username', 'regex:/^[a-zA-Z0-9._-]+$/'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
         ]);
 
-        $customer = Customer::create([
+        $client = User::query()->create([
+            'name' => trim($data['first_name'].' '.$data['last_name']),
             'first_name' => $data['first_name'],
             'last_name' => $data['last_name'],
             'age' => $data['age'],
@@ -37,15 +39,16 @@ class AuthController extends Controller
             'contact' => $data['contact'],
             'username' => $data['username'],
             'password' => $data['password'],
+            'role' => User::ROLE_CLIENT,
             'status' => 1,
         ]);
 
-        ActivityLogger::record($customer, 'Customer registered', $customer->username);
+        ActivityLogger::record($client, 'Customer registered', $client->username);
 
-        $token = $customer->createToken('spa')->plainTextToken;
+        $token = $client->createToken('spa')->plainTextToken;
 
         return response()->json([
-            'user' => $this->customerPayload($customer),
+            'user' => $this->customerPayload($client),
             'token' => $token,
         ], 201);
     }
@@ -57,27 +60,30 @@ class AuthController extends Controller
             'password' => ['required', 'string'],
         ]);
 
-        $customer = Customer::where('email', $credentials['email'])->first();
+        $client = User::query()
+            ->where('email', $credentials['email'])
+            ->where('role', User::ROLE_CLIENT)
+            ->first();
 
-        if (! $customer || ! Hash::check($credentials['password'], $customer->password)) {
+        if (! $client || ! Hash::check($credentials['password'], $client->password)) {
             throw ValidationException::withMessages([
                 'email' => [__('auth.failed')],
             ]);
         }
 
-        if ((int) $customer->status !== 1) {
+        if ((int) $client->status !== 1) {
             throw ValidationException::withMessages([
                 'email' => ['This account is disabled.'],
             ]);
         }
 
-        $customer->tokens()->delete();
-        $token = $customer->createToken('spa')->plainTextToken;
+        $client->tokens()->delete();
+        $token = $client->createToken('spa')->plainTextToken;
 
-        ActivityLogger::record($customer, 'Customer login', $customer->username);
+        ActivityLogger::record($client, 'Customer login', $client->username);
 
         return response()->json([
-            'user' => $this->customerPayload($customer),
+            'user' => $this->customerPayload($client),
             'token' => $token,
         ]);
     }
@@ -119,7 +125,7 @@ class AuthController extends Controller
     {
         $actor = $request->user();
 
-        if ($actor instanceof Customer) {
+        if ($actor instanceof User && $actor->isClient()) {
             return response()->json(['user' => $this->customerPayload($actor)]);
         }
 
@@ -130,8 +136,13 @@ class AuthController extends Controller
         return response()->json(['user' => null]);
     }
 
-    private function customerPayload(Customer $c): array
+    private function customerPayload(User $c): array
     {
+        $activeLoan = $c->loanDetails()
+            ->where('status', LoanDetail::STATUS_ACTIVE)
+            ->orderByDesc('id')
+            ->first();
+
         return [
             'type' => 'customer',
             'id' => $c->id,
@@ -145,6 +156,11 @@ class AuthController extends Controller
             'address' => $c->address,
             'contact' => $c->contact,
             'status' => $c->status,
+            'can_submit_loan_application' => $activeLoan === null,
+            'active_loan' => $activeLoan === null ? null : [
+                'id' => $activeLoan->id,
+                'transaction_no' => $activeLoan->transaction_no,
+            ],
         ];
     }
 

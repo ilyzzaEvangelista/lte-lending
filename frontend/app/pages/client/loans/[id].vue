@@ -87,7 +87,7 @@
                                   min="0.01"
                                   step="0.01"
                                   variant="outlined"
-                                  density="comfortable"
+                                  "
                                   prepend-inner-icon="mdi-currency-php"
                               />
                               <v-file-input
@@ -95,7 +95,7 @@
                                   label="Receipt image (optional)"
                                   accept="image/*"
                                   variant="outlined"
-                                  density="comfortable"
+                                  "
                                   clearable
                               />
                               <v-alert v-if="payErr" type="error" variant="tonal" density="compact" class="mb-2"
@@ -142,7 +142,23 @@
                       {{ item.balance != null ? formatMoney(item.balance) : '—' }}
                   </template>
                   <template #item.status="{ item }">
-                      <v-chip size="x-small" variant="flat">{{ item.status }}</v-chip>
+                      <v-chip class="text-capitalize" size="x-small" variant="flat" :color="statusColor(item.status)">{{ item.status }}</v-chip>
+                  </template>
+                  <template #item.receipt="{ item }">
+                      <div v-if="item._receiptObjectUrl" class="d-flex align-center ga-2 py-1">
+                          <v-btn
+                              icon="mdi-eye"
+                              size="small"
+                              color="primary"
+                              class="cursor-pointer"
+                              aria-label="Enlarge receipt"
+                              @click="openReceiptPreview(item)"
+                              variant="text"
+                          >
+                          <v-icon class="mr-2" prepend-icon="mdi-eye" size="small" color="primary" />
+                            View Receipt</v-btn>
+                      </div>
+                      <span v-else class="text-medium-emphasis">—</span>
                   </template>
               </v-data-table>
           </v-card>
@@ -157,6 +173,24 @@
               </v-card-title>
               <v-card-text>
                   <v-img v-if="payslipObjectUrl" :src="payslipObjectUrl" max-height="80vh" contain alt="Payslip" />
+              </v-card-text>
+          </v-card>
+      </v-dialog>
+
+      <v-dialog v-model="receiptDialog" max-width="920">
+          <v-card v-if="receiptDialogItem">
+              <v-card-title class="d-flex align-center justify-space-between text-wrap">
+                  <span>Receipt · {{ formatMoney(receiptDialogItem.amount) }}</span>
+                  <v-btn icon="mdi-close" variant="text" aria-label="Close" @click="receiptDialog = false" />
+              </v-card-title>
+              <v-card-text>
+                  <v-img
+                      v-if="receiptDialogItem._receiptObjectUrl"
+                      :src="receiptDialogItem._receiptObjectUrl"
+                      max-height="80vh"
+                      contain
+                      alt="Receipt"
+                  />
               </v-card-text>
           </v-card>
       </v-dialog>
@@ -187,6 +221,8 @@
   const payErr = ref("");
   const payslipObjectUrl = ref(null);
   const payslipDialog = ref(false);
+  const receiptDialog = ref(false);
+  const receiptDialogItem = ref(null);
 
   const recordHeaders = [
       { title: "No. of payments", key: "no_of_payments" },
@@ -199,6 +235,7 @@
       { title: "Amount", key: "amount" },
       { title: "Status", key: "status" },
       { title: "Balance after", key: "balance" },
+      { title: "Receipt", key: "receipt", sortable: false, align: "start"},
   ];
 
   const canPay = computed(() => {
@@ -298,7 +335,10 @@
 
   onMounted(load);
 
-  onBeforeUnmount(revokePayslipUrl);
+  onBeforeUnmount(() => {
+      revokePayslipUrl();
+      revokeAllReceiptUrls();
+  });
 
   function revokePayslipUrl() {
       if (payslipObjectUrl.value) {
@@ -331,13 +371,55 @@
       payslipDialog.value = true;
   }
 
+  function revokeAllReceiptUrls() {
+      for (const p of detail.value?.loan_payments || []) {
+          if (p._receiptObjectUrl) {
+              URL.revokeObjectURL(p._receiptObjectUrl);
+              p._receiptObjectUrl = undefined;
+          }
+      }
+  }
+
+  async function loadReceiptPreviews(list) {
+      const base = `${config.public.apiBase}/api`;
+      await Promise.all(
+          list.map(async (p) => {
+              if (!p.has_receipt) return;
+              try {
+                  const res = await fetch(`${base}/client/payments/${p.id}/receipt`, {
+                      headers: {
+                          Accept: "image/*,*/*",
+                          Authorization: `Bearer ${auth.token}`,
+                      },
+                  });
+                  if (!res.ok) return;
+                  const blob = await res.blob();
+                  if (p._receiptObjectUrl) URL.revokeObjectURL(p._receiptObjectUrl);
+                  p._receiptObjectUrl = URL.createObjectURL(blob);
+              } catch {
+                  /* ignore preview errors */
+              }
+          })
+      );
+  }
+
+  function openReceiptPreview(item) {
+      if (!item._receiptObjectUrl) return;
+      receiptDialogItem.value = item;
+      receiptDialog.value = true;
+  }
+
   async function load() {
       loading.value = true;
       err.value = "";
       revokePayslipUrl();
+      revokeAllReceiptUrls();
       try {
           const res = await api(`/client/loans/${route.params.id}`);
           detail.value = res.data;
+          if (detail.value?.loan_payments?.length) {
+              await loadReceiptPreviews(detail.value.loan_payments);
+          }
           await loadPayslipPreview();
       } catch (e) {
           err.value = e?.data?.message || "Could not load loan.";
@@ -382,7 +464,15 @@
           active: "success",
           rejected: "error",
           closed: "secondary",
+          confirmed: "success",
+          rejected: "error",
       };
       return map[status] || "default";
   }
 </script>
+
+<style scoped>
+.receipt-thumb {
+  border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+}
+</style>

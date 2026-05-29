@@ -67,7 +67,7 @@ class AdminPaymentController extends Controller
 
                     LoanRecord::create([
                         'transaction_no' => $loanPayment->transaction_no,
-                        'customer_id' => $loanPayment->customer_id,
+                        'user_id' => $loanPayment->user_id,
                         'no_of_payments' => $prev->no_of_payments + 1,
                         'payment_date' => now()->toDateString(),
                         'amount' => $prev->amount,

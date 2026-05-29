@@ -4,7 +4,7 @@ namespace App\Support;
 
 use App\Models\ActivityLog;
 use App\Models\Admin;
-use App\Models\Customer;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 
 class ActivityLogger
@@ -13,7 +13,7 @@ class ActivityLogger
     {
         $type = match (true) {
             $actor instanceof Admin => 'admin',
-            $actor instanceof Customer => 'customer',
+            $actor instanceof User && $actor->isClient() => 'customer',
             default => 'unknown',
         };
 

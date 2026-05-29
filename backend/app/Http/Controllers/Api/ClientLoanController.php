@@ -4,9 +4,10 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreLoanApplicationRequest;
-use App\Models\Customer;
 use App\Models\LoanDetail;
+use App\Models\User;
 use App\Support\ActivityLogger;
+use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -17,7 +18,7 @@ class ClientLoanController extends Controller
 {
     public function index(Request $request): JsonResponse
     {
-        /** @var Customer $customer */
+        /** @var User $customer */
         $customer = $request->user();
 
         $rows = $customer->loanDetails()
@@ -30,10 +31,21 @@ class ClientLoanController extends Controller
 
     public function store(StoreLoanApplicationRequest $request): JsonResponse
     {
-        /** @var Customer $customer */
+        /** @var User $customer */
         $customer = $request->user();
 
+        $hasActiveLoan = $customer->loanDetails()
+            ->where('status', LoanDetail::STATUS_ACTIVE)
+            ->exists();
+        if ($hasActiveLoan) {
+            throw ValidationException::withMessages([
+                'loan' => ['You already have an active loan. Close it before submitting a new application.'],
+            ]);
+        }
+
         $validated = $request->validated();
+
+        $this->assertProfileCompleteForApplication($customer);
 
         $transactionNo = 'TRN-'.strtoupper(Str::random(12));
 
@@ -45,9 +57,25 @@ class ClientLoanController extends Controller
             ]);
         }
 
+        $dateOfBirth = $customer->age !== null
+            ? Carbon::today()->subYears((int) $customer->age)->toDateString()
+            : null;
+
         $payload = collect($validated)->except(['payslip_base64', 'accept_terms'])->merge([
+            'first_name' => (string) $customer->first_name,
+            'last_name' => (string) $customer->last_name,
+            'date_of_birth' => $dateOfBirth,
+            'age' => $customer->age,
+            'gender' => $customer->gender,
+            'email' => (string) $customer->email,
+            'address' => $customer->address,
+            'city' => null,
+            'country' => null,
+            'nearest_branch' => null,
+            'phone' => $customer->contact !== null ? (string) $customer->contact : '',
+            'profession' => null,
             'transaction_no' => $transactionNo,
-            'customer_id' => $customer->id,
+            'user_id' => $customer->id,
             'interest' => 0,
             'monthly' => null,
             'terms_accepted_at' => now(),
@@ -64,9 +92,9 @@ class ClientLoanController extends Controller
 
     public function show(Request $request, LoanDetail $loanDetail): JsonResponse
     {
-        /** @var Customer $customer */
+        /** @var User $customer */
         $customer = $request->user();
-        if ($loanDetail->customer_id !== $customer->id) {
+        if ($loanDetail->user_id !== $customer->id) {
             abort(404);
         }
 
@@ -75,9 +103,9 @@ class ClientLoanController extends Controller
 
     public function records(Request $request, LoanDetail $loanDetail): JsonResponse
     {
-        /** @var Customer $customer */
+        /** @var User $customer */
         $customer = $request->user();
-        if ($loanDetail->customer_id !== $customer->id) {
+        if ($loanDetail->user_id !== $customer->id) {
             abort(404);
         }
 
@@ -88,9 +116,9 @@ class ClientLoanController extends Controller
 
     public function payslip(Request $request, LoanDetail $loanDetail): Response
     {
-        /** @var Customer $customer */
+        /** @var User $customer */
         $customer = $request->user();
-        if ($loanDetail->customer_id !== $customer->id) {
+        if ($loanDetail->user_id !== $customer->id) {
             abort(404);
         }
 
@@ -133,5 +161,33 @@ class ClientLoanController extends Controller
             str_starts_with($binary, 'RIFF') && strlen($binary) >= 12 && substr($binary, 8, 4) === 'WEBP' => 'image/webp',
             default => 'application/octet-stream',
         };
+    }
+
+    private function assertProfileCompleteForApplication(User $user): void
+    {
+        $missing = [];
+        if (trim((string) $user->first_name) === '') {
+            $missing[] = 'first name';
+        }
+        if (trim((string) $user->last_name) === '') {
+            $missing[] = 'last name';
+        }
+        if (trim((string) $user->email) === '') {
+            $missing[] = 'email';
+        }
+        if ($user->age === null) {
+            $missing[] = 'age';
+        }
+        if ($user->gender === null || trim((string) $user->gender) === '') {
+            $missing[] = 'gender';
+        }
+
+        if ($missing !== []) {
+            throw ValidationException::withMessages([
+                'profile' => [
+                    'Your account profile is incomplete ('.implode(', ', $missing).'). Please update your details before applying.',
+                ],
+            ]);
+        }
     }
 }

@@ -6,7 +6,7 @@
               v-if="!loading && payments.length"
               v-model="search"
               class="admin-payments-search"
-              density="comfortable"
+              "
               variant="outlined"
               label="Search"
               placeholder="Customer, email, transaction…"
