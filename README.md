@@ -134,3 +134,9 @@ See `backend/routes/api.php` for the canonical list.
 ## License
 
 MIT (default Laravel application license unless you specify otherwise).
+
+
+<img width="1920" height="1932" alt="screencapture-localhost-3000-2026-05-29-13_57_45" src="https://github.com/user-attachments/assets/8a839677-0afd-4643-beed-821d740734a2" />
+<img width="1920" height="1377" alt="screencapture-localhost-3000-client-dashboard-2026-05-29-13_57_26" src="https://github.com/user-attachments/assets/1317cdb1-23f6-475b-a0c1-cf198270ddec" />
+<img width="1920" height="1320" alt="screencapture-localhost-3000-admin-2026-05-29-13_58_02" src="https://github.com/user-attachments/assets/1e713bb3-d50f-43eb-9e97-9695499d6b77" />
+
